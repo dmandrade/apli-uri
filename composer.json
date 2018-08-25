@@ -1,0 +1,31 @@
+{
+    "name": "apli/uri",
+    "type": "apli-package",
+    "description": "Aplí uri package",
+    "keywords": [
+        "apli",
+        "framework",
+        "uri"
+    ],
+    "homepage": "https://github.com/dmandrade/apli-uri",
+    "require": {
+        "php": ">=5.6"
+        "ext-mbstring": "*",
+        "ext-intl": "*",
+        "ext-fileinfo": "*",
+        "psr/http-message": "1.*"
+    },
+    "require-dev": {
+        "codeception/codeception": "^2.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Apli\\Uri\\": ""
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.x-dev"
+        }
+    }
+}
