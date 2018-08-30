@@ -7,7 +7,7 @@
  *  @project apli
  *  @file Url.php
  *  @author Danilo Andrade <danilo@webbingbrasil.com.br>
- *  @date 25/08/18 at 12:00
+ *  @date 27/08/18 at 10:27
  */
 
 /**
@@ -36,41 +36,6 @@ class Url extends AbstractUri
     ];
 
     /**
-     * Tell whether the current is in valid state.
-     *
-     * The object validity depends on the scheme. This method
-     * MUST be implemented on every object
-     *
-     * @return bool
-     */
-    protected function isValidUri()
-    {
-        return '' !== $this->host
-            && (null === $this->scheme || isset(static::$standardSchemes[$this->scheme]))
-            && !('' != $this->scheme && null === $this->host);
-    }
-
-    /**
-     * Filter the Port component.
-     *
-     * @param int|null $port
-     *
-     * @throws UriException if the port is invalid
-     *
-     * @return int|null
-     */
-    protected static function filterPort($port)
-    {
-        if (null === $port) {
-            return $port;
-        }
-        if (1 > $port || 65535 < $port) {
-            throw UriException::createFromInvalidPort($port);
-        }
-        return $port;
-    }
-
-    /**
      * Create a new instance from the environment.
      *
      * @param array $server the server and execution environment information array typically ($_SERVER)
@@ -83,20 +48,6 @@ class Url extends AbstractUri
         list($host, $port) = static::fetchHostname($server);
         list($path, $query) = static::fetchRequestUri($server);
         return new static(static::fetchScheme($server), $user, $pass, $host, $port, $path, $query);
-    }
-
-    /**
-     * Returns the environment scheme.
-     *
-     * @param array $server the environment server typically $_SERVER
-     * @return string
-     */
-    protected static function fetchScheme(array $server)
-    {
-        $server += ['HTTPS' => ''];
-        $res = filter_var($server['HTTPS'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-
-        return $res !== false ? 'https' : 'http';
     }
 
     /**
@@ -139,14 +90,14 @@ class Url extends AbstractUri
         $server += ['SERVER_PORT' => null];
 
         if (null !== $server['SERVER_PORT']) {
-            $server['SERVER_PORT'] = (int) $server['SERVER_PORT'];
+            $server['SERVER_PORT'] = (int)$server['SERVER_PORT'];
         }
 
         if (isset($server['HTTP_HOST'])) {
             preg_match(',^(?<host>(\[.*\]|[^:])*)(\:(?<port>[^/?\#]*))?$,x', $server['HTTP_HOST'], $matches);
             return [
                 $matches['host'],
-                isset($matches['port']) ? (int) $matches['port'] : $server['SERVER_PORT'],
+                isset($matches['port']) ? (int)$matches['port'] : $server['SERVER_PORT'],
             ];
         }
 
@@ -175,11 +126,60 @@ class Url extends AbstractUri
         }
 
         if (isset($server['REQUEST_URI'])) {
-            list($path, ) = explode('?', $server['REQUEST_URI'], 2);
+            list($path,) = explode('?', $server['REQUEST_URI'], 2);
             $query = ('' !== $server['QUERY_STRING']) ? $server['QUERY_STRING'] : null;
             return [$path, $query];
         }
 
         return [$server['PHP_SELF'], $server['QUERY_STRING']];
+    }
+
+    /**
+     * Returns the environment scheme.
+     *
+     * @param array $server the environment server typically $_SERVER
+     * @return string
+     */
+    protected static function fetchScheme(array $server)
+    {
+        $server += ['HTTPS' => ''];
+        $res = filter_var($server['HTTPS'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+        return $res !== false ? 'https' : 'http';
+    }
+
+    /**
+     * Filter the Port component.
+     *
+     * @param int|null $port
+     *
+     * @throws UriException if the port is invalid
+     *
+     * @return int|null
+     */
+    protected static function filterPort($port)
+    {
+        if (null === $port) {
+            return $port;
+        }
+        if (1 > $port || 65535 < $port) {
+            throw UriException::createFromInvalidPort($port);
+        }
+        return $port;
+    }
+
+    /**
+     * Tell whether the current is in valid state.
+     *
+     * The object validity depends on the scheme. This method
+     * MUST be implemented on every object
+     *
+     * @return bool
+     */
+    protected function isValidUri()
+    {
+        return '' !== $this->host
+            && (null === $this->scheme || isset(static::$standardSchemes[$this->scheme]))
+            && !('' != $this->scheme && null === $this->host);
     }
 }

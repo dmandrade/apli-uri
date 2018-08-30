@@ -7,7 +7,7 @@
  *  @project apli
  *  @file AbstractUri.php
  *  @author Danilo Andrade <danilo@webbingbrasil.com.br>
- *  @date 25/08/18 at 12:28
+ *  @date 27/08/18 at 10:27
  */
 
 namespace Apli\Uri;
@@ -42,35 +42,35 @@ abstract class AbstractUri implements Uri
      * @var array
      */
     protected static $standardSchemes;
-    
+
     /**
      * scheme component.
      *
      * @var string|null
      */
     protected $scheme;
-    
+
     /**
      * user info part.
      *
      * @var string|null
      */
-    protected $user_info;
-    
+    protected $userInfo;
+
     /**
      * host component.
      *
      * @var string|null
      */
     protected $host;
-    
+
     /**
      * port component.
      *
      * @var int|null
      */
     protected $port;
-    
+
     /**
      * authority string representation.
      *
@@ -130,7 +130,7 @@ abstract class AbstractUri implements Uri
     )
     {
         $this->scheme = $this->formatScheme($scheme);
-        $this->user_info = $this->formatUserInfo($user, $pass);
+        $this->userInfo = $this->formatUserInfo($user, $pass);
         $this->host = $this->formatHost($host);
         $this->port = $this->formatPort($port);
         $this->authority = $this->setAuthority();
@@ -153,11 +153,11 @@ abstract class AbstractUri implements Uri
             return $scheme;
         }
 
-        $formatted_scheme = strtolower($scheme);
+        $formattedScheme = strtolower($scheme);
         static $pattern = '/^[a-z][a-z\+\.\-]*$/';
 
-        if (preg_match($pattern, $formatted_scheme)) {
-            return $formatted_scheme;
+        if (preg_match($pattern, $formattedScheme)) {
+            return $formattedScheme;
         }
 
         throw new UriException(sprintf('The submitted scheme `%s` is invalid', $scheme));
@@ -176,15 +176,15 @@ abstract class AbstractUri implements Uri
             return $user;
         }
 
-        static $user_pattern = '/(?:[^%'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.']++|%(?![A-Fa-f0-9]{2}))/';
-        $user = preg_replace_callback($user_pattern, [AbstractUri::class, 'urlEncodeMatch'], $user);
+        static $userPattern = '/(?:[^%'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.']++|%(?![A-Fa-f0-9]{2}))/';
+        $user = preg_replace_callback($userPattern, [AbstractUri::class, 'urlEncodeMatch'], $user);
 
         if (null === $password) {
             return $user;
         }
 
-        static $password_pattern = '/(?:[^%:'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.']++|%(?![A-Fa-f0-9]{2}))/';
-        return $user.':'.preg_replace_callback($password_pattern, [AbstractUri::class, 'urlEncodeMatch'], $password);
+        static $passwordPattern = '/(?:[^%:'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.']++|%(?![A-Fa-f0-9]{2}))/';
+        return $user.':'.preg_replace_callback($passwordPattern, [AbstractUri::class, 'urlEncodeMatch'], $password);
     }
 
     /**
@@ -218,25 +218,25 @@ abstract class AbstractUri implements Uri
      */
     private function formatRegisteredName($host)
     {
-        $formatted_host = rawurldecode(strtolower($host));
+        $formattedHost = rawurldecode(strtolower($host));
 
-        static $reg_name = '/^((?<unreserved>[a-z0-9_~\-\.])|(?<sub_delims>[!$&\'()*+,;=])|(?<encoded>%[A-F0-9]{2}))+$/x';
+        static $regName = '/^((?<unreserved>[a-z0-9_~\-\.])|(?<sub_delims>[!$&\'()*+,;=])|(?<encoded>%[A-F0-9]{2}))+$/x';
 
-        if (preg_match($reg_name, $formatted_host)) {
-            return $formatted_host;
+        if (preg_match($regName, $formattedHost)) {
+            return $formattedHost;
         }
 
         //to test IDN host non-ascii characters must be present in the host
-        static $idn_pattern = '/[^\x20-\x7f]/';
+        static $idnPattern = '/[^\x20-\x7f]/';
 
-        if (!preg_match($idn_pattern, $formatted_host)) {
+        if (!preg_match($idnPattern, $formattedHost)) {
             throw new UriException(sprintf('Host `%s` is invalid : the registered name is malformed', $host));
         }
 
-        static $idn_support = null;
-        $idn_support = $idn_support ?: function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
+        static $idnSupport = null;
+        $idnSupport = $idnSupport ?: function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
 
-        if (!$idn_support) {
+        if (!$idnSupport) {
             // @codeCoverageIgnoreStart
             // added because it is not possible in travis to disabled the ext/intl extension
             // see travis issue https://github.com/travis-ci/travis-ci/issues/4701
@@ -244,10 +244,10 @@ abstract class AbstractUri implements Uri
             // @codeCoverageIgnoreEnd
         }
 
-        $formatted_host = idn_to_ascii($formatted_host, 0, INTL_IDNA_VARIANT_UTS46, $arr);
+        $formattedHost = idn_to_ascii($formattedHost, 0, INTL_IDNA_VARIANT_UTS46, $arr);
 
         if (0 === $arr['errors']) {
-            return $formatted_host;
+            return $formattedHost;
         }
 
         throw new UriException(sprintf('Host `%s` is invalid : %s', $host, $this->getIdnaErrorMessage($arr['errors'])));
@@ -258,15 +258,15 @@ abstract class AbstractUri implements Uri
      *
      * @see http://icu-project.org/apiref/icu4j/com/ibm/icu/text/IDNA.Error.html
      *
-     * @param int $error_byte
+     * @param int $errorCode
      * @return string
      */
-    private function getIdnaErrorMessage($error_byte)
+    private function getIdnaErrorMessage($errorCode)
     {
         /**
          * IDNA errors.
          */
-        static $idn_errors = [
+        static $errors = [
             IDNA_ERROR_EMPTY_LABEL => 'a non-final domain name label (or the whole domain name) is empty',
             IDNA_ERROR_LABEL_TOO_LONG => 'a domain name label is longer than 63 bytes',
             IDNA_ERROR_DOMAIN_NAME_TOO_LONG => 'a domain name is longer than 255 bytes in its storage form',
@@ -282,15 +282,15 @@ abstract class AbstractUri implements Uri
             IDNA_ERROR_CONTEXTJ => 'a label does not meet the IDNA CONTEXTJ requirements',
         ];
 
-        $res = [];
+        $result = [];
 
-        foreach ($idn_errors as $error => $reason) {
-            if ($error_byte & $error) {
-                $res[] = $reason;
+        foreach ($errors as $error => $reason) {
+            if ($errorCode & $error) {
+                $result[] = $reason;
             }
         }
 
-        return empty($res) ? 'Unknown IDNA conversion error.' : implode(', ', $res).'.';
+        return empty($result) ? 'Unknown IDNA conversion error.' : implode(', ', $result).'.';
     }
 
     /**
@@ -307,7 +307,7 @@ abstract class AbstractUri implements Uri
             return $host;
         }
 
-        static $ip_future = '/^
+        static $ipFuture = '/^
             v(?<version>[A-F0-9])+\.
             (?:
                 (?<unreserved>[a-z0-9_~\-\.])|
@@ -315,7 +315,7 @@ abstract class AbstractUri implements Uri
             )+
         $/ix';
 
-        if (preg_match($ip_future, $ip, $matches) && !in_array($matches['version'], ['4', '6'], true)) {
+        if (preg_match($ipFuture, $ip, $matches) && !in_array($matches['version'], ['4', '6'], true)) {
             return $host;
         }
 
@@ -323,8 +323,8 @@ abstract class AbstractUri implements Uri
             throw new UriException(sprintf('Host `%s` is invalid : the IP host is malformed', $host));
         }
 
-        static $gen_delims = '/[:\/?#\[\]@ ]/'; // Also includes space.
-        if (preg_match($gen_delims, rawurldecode(substr($ip, $pos)))) {
+        static $genDelims = '/[:\/?#\[\]@ ]/'; // Also includes space.
+        if (preg_match($genDelims, rawurldecode(substr($ip, $pos)))) {
             throw new UriException(sprintf('Host `%s` is invalid : the IP host is malformed', $host));
         }
 
@@ -335,8 +335,8 @@ abstract class AbstractUri implements Uri
 
         //Only the address block fe80::/10 can have a Zone ID attach to
         //let's detect the link local significant 10 bits
-        static $address_block = "\xfe\x80";
-        if (substr(inet_pton($ip) & $address_block, 0, 2) === $address_block) {
+        static $addressBlock = "\xfe\x80";
+        if (substr(inet_pton($ip) & $addressBlock, 0, 2) === $addressBlock) {
             return $host;
         }
 
@@ -626,12 +626,12 @@ abstract class AbstractUri implements Uri
     public function __toString()
     {
         $this->uri = $this->uri ?: $this->getUriString(
-                $this->scheme,
-                $this->authority,
-                $this->path,
-                $this->query,
-                $this->fragment
-            );
+            $this->scheme,
+            $this->authority,
+            $this->path,
+            $this->query,
+            $this->fragment
+        );
 
         return $this->uri;
     }
@@ -688,8 +688,8 @@ abstract class AbstractUri implements Uri
     protected function setAuthority()
     {
         $authority = null;
-        if (null !== $this->user_info) {
-            $authority = $this->user_info.'@';
+        if (null !== $this->userInfo) {
+            $authority = $this->userInfo.'@';
         }
         if (null !== $this->host) {
             $authority .= $this->host;
@@ -723,7 +723,7 @@ abstract class AbstractUri implements Uri
      */
     public function getUserInfo()
     {
-        return (string)$this->user_info;
+        return (string)$this->userInfo;
     }
 
     /**
@@ -860,17 +860,21 @@ abstract class AbstractUri implements Uri
     public function withScheme($scheme)
     {
         $scheme = $this->formatScheme($this->filterString($scheme));
+
         if ('' === $scheme) {
             $scheme = null;
         }
+
         if ($scheme === $this->scheme) {
             return $this;
         }
+
         $clone = clone $this;
         $clone->scheme = $scheme;
         $clone->port = $clone->formatPort($clone->port);
         $clone->authority = $clone->setAuthority();
         $clone->assertValidState();
+
         return $clone;
     }
 
@@ -914,16 +918,20 @@ abstract class AbstractUri implements Uri
     public function withUserInfo($user, $password = null)
     {
         $user_info = null;
+
         if ('' !== $user) {
             $user_info = $this->formatUserInfo($user, $password);
         }
-        if ($user_info === $this->user_info) {
+
+        if ($user_info === $this->userInfo) {
             return $this;
         }
+
         $clone = clone $this;
-        $clone->user_info = $user_info;
+        $clone->userInfo = $user_info;
         $clone->authority = $clone->setAuthority();
         $clone->assertValidState();
+
         return $clone;
     }
 
@@ -945,16 +953,20 @@ abstract class AbstractUri implements Uri
     public function withHost($host)
     {
         $host = $this->formatHost($this->filterString($host));
+
         if ('' === $host) {
             $host = null;
         }
+
         if ($host === $this->host) {
             return $this;
         }
+
         $clone = clone $this;
         $clone->host = $host;
         $clone->authority = $clone->setAuthority();
         $clone->assertValidState();
+
         return $clone;
     }
 
@@ -981,13 +993,16 @@ abstract class AbstractUri implements Uri
     public function withPort($port)
     {
         $port = $this->formatPort($port);
+
         if ($port === $this->port) {
             return $this;
         }
+
         $clone = clone $this;
         $clone->port = $port;
         $clone->authority = $clone->setAuthority();
         $clone->assertValidState();
+
         return $clone;
     }
 
@@ -1019,12 +1034,15 @@ abstract class AbstractUri implements Uri
     public function withPath($path)
     {
         $path = $this->filterPath($this->filterString($path));
+
         if ($path === $this->path) {
             return $this;
         }
+
         $clone = clone $this;
         $clone->path = $path;
         $clone->assertValidState();
+
         return $clone;
     }
 
@@ -1049,15 +1067,19 @@ abstract class AbstractUri implements Uri
     public function withQuery($query)
     {
         $query = $this->formatQueryAndFragment($this->filterString($query));
+
         if ('' === $query) {
             $query = null;
         }
+
         if ($query === $this->query) {
             return $this;
         }
+
         $clone = clone $this;
         $clone->query = $query;
         $clone->assertValidState();
+
         return $clone;
     }
 
@@ -1082,15 +1104,19 @@ abstract class AbstractUri implements Uri
     public function withFragment($fragment)
     {
         $fragment = $this->formatQueryAndFragment($this->filterString($fragment));
+
         if ('' === $fragment) {
             $fragment = null;
         }
+
         if ($fragment === $this->fragment) {
             return $this;
         }
+
         $clone = clone $this;
         $clone->fragment = $fragment;
         $clone->assertValidState();
+
         return $clone;
     }
 

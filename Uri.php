@@ -7,7 +7,7 @@
  *  @project apli
  *  @file Uri.php
  *  @author Danilo Andrade <danilo@webbingbrasil.com.br>
- *  @date 25/08/18 at 11:15
+ *  @date 27/08/18 at 10:27
  */
 
 /**
@@ -218,7 +218,7 @@ interface Uri
      * user; an empty string for the user is equivalent to removing user
      * information.
      *
-     * @param string $user The user name to use for authority.
+     * @param string      $user The user name to use for authority.
      * @param null|string $password The password associated with $user.
      * @return static A new instance with the specified user information.
      */
