@@ -137,7 +137,6 @@ abstract class AbstractUri implements Uri
         $this->path = $this->filterPath($path);
         $this->query = $this->formatQueryAndFragment($query);
         $this->fragment = $this->formatQueryAndFragment($fragment);
-        $this->assertValidState();
     }
 
     /**
@@ -426,50 +425,6 @@ abstract class AbstractUri implements Uri
         static $pattern = '/(?:[^'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.'%:@\/\?]++|%(?![A-Fa-f0-9]{2}))/';
 
         return preg_replace_callback($pattern, [AbstractUri::class, 'urlEncodeMatch'], $component);
-    }
-
-    /**
-     * Assert the internal state is valid.
-     *
-     * @see https://tools.ietf.org/html/rfc3986#section-3
-     * @see https://tools.ietf.org/html/rfc3986#section-3.3
-     *
-     * @throws UriException if the is in an invalid state according to RFC3986
-     * @throws UriException if the is in an invalid state according to scheme specific rules
-     */
-    protected function assertValidState()
-    {
-        $this->uri = null;
-
-        if (null !== $this->authority && ('' !== $this->path && '/' !== $this->path[0])) {
-            throw new UriException(
-                'Invalid URI: if an authority is present the path must be empty or start with a `/`'
-            );
-        }
-
-        if (null === $this->authority && 0 === strpos($this->path, '//')) {
-            throw new UriException(
-                'Invalid URI: if there is no authority the path `%s` can not start with a `//`'
-            );
-        }
-
-        if (null === $this->authority
-            && null === $this->scheme
-            && false !== ($pos = strpos($this->path, ':'))
-            && false === strpos(substr($this->path, 0, $pos), '/')
-        ) {
-            throw new UriException(
-                'Invalid URI: in absence of a scheme and an authority the first path segment cannot contain a colon (":") character.'
-            );
-        }
-
-        if (!$this->isValidUri()) {
-            throw new UriException(sprintf(
-                'Invalid URI: The submitted uri `%s` is invalid for the following scheme(s): `%s`',
-                $this->getUriString($this->scheme, $this->authority, $this->path, $this->query, $this->fragment),
-                implode(', ', array_keys(static::$standardSchemes))
-            ));
-        }
     }
 
     /**
@@ -873,7 +828,6 @@ abstract class AbstractUri implements Uri
         $clone->scheme = $scheme;
         $clone->port = $clone->formatPort($clone->port);
         $clone->authority = $clone->setAuthority();
-        $clone->assertValidState();
 
         return $clone;
     }
@@ -930,7 +884,6 @@ abstract class AbstractUri implements Uri
         $clone = clone $this;
         $clone->userInfo = $user_info;
         $clone->authority = $clone->setAuthority();
-        $clone->assertValidState();
 
         return $clone;
     }
@@ -965,7 +918,6 @@ abstract class AbstractUri implements Uri
         $clone = clone $this;
         $clone->host = $host;
         $clone->authority = $clone->setAuthority();
-        $clone->assertValidState();
 
         return $clone;
     }
@@ -1001,7 +953,6 @@ abstract class AbstractUri implements Uri
         $clone = clone $this;
         $clone->port = $port;
         $clone->authority = $clone->setAuthority();
-        $clone->assertValidState();
 
         return $clone;
     }
@@ -1041,7 +992,6 @@ abstract class AbstractUri implements Uri
 
         $clone = clone $this;
         $clone->path = $path;
-        $clone->assertValidState();
 
         return $clone;
     }
@@ -1078,7 +1028,6 @@ abstract class AbstractUri implements Uri
 
         $clone = clone $this;
         $clone->query = $query;
-        $clone->assertValidState();
 
         return $clone;
     }
@@ -1115,7 +1064,6 @@ abstract class AbstractUri implements Uri
 
         $clone = clone $this;
         $clone->fragment = $fragment;
-        $clone->assertValidState();
 
         return $clone;
     }
