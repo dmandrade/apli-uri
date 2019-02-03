@@ -12,12 +12,14 @@
 
 namespace Apli\Uri;
 
+use Psr\Http\Message\UriInterface;
+
 /**
  * Class with common properties and methods
  *
  * @package Apli\Uri
  */
-abstract class AbstractUri implements Uri
+abstract class AbstractUri implements UriInterface
 {
     /**
      * RFC3986 Sub delimiter characters regular expression pattern.

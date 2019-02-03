@@ -38,9 +38,9 @@ class Url extends AbstractUri
     /**
      * Create a new instance from the environment.
      *
-     * @param array $server the server and execution environment information array typically ($_SERVER)
-     *
-     * @return static
+     * @param array $server
+     * @return Url
+     * @throws UriException
      */
     public static function createFromServer(array $server)
     {
