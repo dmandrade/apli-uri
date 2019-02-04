@@ -1,11 +1,12 @@
 <?php
 /**
- *  Copyright (c) 2018 Danilo Andrade
+ *  Copyright (c) 2018 Danilo Andrade.
  *
  *  This file is part of the apli project.
  *
  * @project apli
  * @file AbstractUri.php
+ *
  * @author Danilo Andrade <danilo@webbingbrasil.com.br>
  * @date 27/08/18 at 10:27
  */
@@ -15,9 +16,7 @@ namespace Apli\Uri;
 use Psr\Http\Message\UriInterface;
 
 /**
- * Class with common properties and methods
- *
- * @package Apli\Uri
+ * Class with common properties and methods.
  */
 abstract class AbstractUri implements UriInterface
 {
@@ -129,8 +128,7 @@ abstract class AbstractUri implements UriInterface
         $path = '',
         $query = null,
         $fragment = null
-    )
-    {
+    ) {
         $this->scheme = $this->formatScheme($scheme);
         $this->userInfo = $this->formatUserInfo($user, $pass);
         $this->host = $this->formatHost($host);
@@ -167,8 +165,9 @@ abstract class AbstractUri implements UriInterface
     /**
      * Set the UserInfo component.
      *
-     * @param  null|string $user
-     * @param  null|string $password
+     * @param null|string $user
+     * @param null|string $password
+     *
      * @return string|null
      */
     protected static function formatUserInfo($user = null, $password = null)
@@ -178,14 +177,15 @@ abstract class AbstractUri implements UriInterface
         }
 
         static $userPattern = '/(?:[^%'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.']++|%(?![A-Fa-f0-9]{2}))/';
-        $user = preg_replace_callback($userPattern, [AbstractUri::class, 'urlEncodeMatch'], $user);
+        $user = preg_replace_callback($userPattern, [self::class, 'urlEncodeMatch'], $user);
 
         if (null === $password) {
             return $user;
         }
 
         static $passwordPattern = '/(?:[^%:'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.']++|%(?![A-Fa-f0-9]{2}))/';
-        return $user.':'.preg_replace_callback($passwordPattern, [AbstractUri::class, 'urlEncodeMatch'], $password);
+
+        return $user.':'.preg_replace_callback($passwordPattern, [self::class, 'urlEncodeMatch'], $password);
     }
 
     /**
@@ -214,7 +214,9 @@ abstract class AbstractUri implements UriInterface
      * The host is converted to its ascii representation if needed
      *
      * @param string $host
+     *
      * @throws UriException if the submitted host is not a valid registered name
+     *
      * @return string
      */
     private function formatRegisteredName($host)
@@ -260,6 +262,7 @@ abstract class AbstractUri implements UriInterface
      * @see http://icu-project.org/apiref/icu4j/com/ibm/icu/text/IDNA.Error.html
      *
      * @param int $errorCode
+     *
      * @return string
      */
     private function getIdnaErrorMessage($errorCode)
@@ -268,19 +271,19 @@ abstract class AbstractUri implements UriInterface
          * IDNA errors.
          */
         static $errors = [
-            IDNA_ERROR_EMPTY_LABEL => 'a non-final domain name label (or the whole domain name) is empty',
-            IDNA_ERROR_LABEL_TOO_LONG => 'a domain name label is longer than 63 bytes',
-            IDNA_ERROR_DOMAIN_NAME_TOO_LONG => 'a domain name is longer than 255 bytes in its storage form',
-            IDNA_ERROR_LEADING_HYPHEN => 'a label starts with a hyphen-minus ("-")',
-            IDNA_ERROR_TRAILING_HYPHEN => 'a label ends with a hyphen-minus ("-")',
-            IDNA_ERROR_HYPHEN_3_4 => 'a label contains hyphen-minus ("-") in the third and fourth positions',
+            IDNA_ERROR_EMPTY_LABEL            => 'a non-final domain name label (or the whole domain name) is empty',
+            IDNA_ERROR_LABEL_TOO_LONG         => 'a domain name label is longer than 63 bytes',
+            IDNA_ERROR_DOMAIN_NAME_TOO_LONG   => 'a domain name is longer than 255 bytes in its storage form',
+            IDNA_ERROR_LEADING_HYPHEN         => 'a label starts with a hyphen-minus ("-")',
+            IDNA_ERROR_TRAILING_HYPHEN        => 'a label ends with a hyphen-minus ("-")',
+            IDNA_ERROR_HYPHEN_3_4             => 'a label contains hyphen-minus ("-") in the third and fourth positions',
             IDNA_ERROR_LEADING_COMBINING_MARK => 'a label starts with a combining mark',
-            IDNA_ERROR_DISALLOWED => 'a label or domain name contains disallowed characters',
-            IDNA_ERROR_PUNYCODE => 'a label starts with "xn--" but does not contain valid Punycode',
-            IDNA_ERROR_LABEL_HAS_DOT => 'a label contains a dot=full stop',
-            IDNA_ERROR_INVALID_ACE_LABEL => 'An ACE label does not contain a valid label string',
-            IDNA_ERROR_BIDI => 'a label does not meet the IDNA BiDi requirements (for right-to-left characters)',
-            IDNA_ERROR_CONTEXTJ => 'a label does not meet the IDNA CONTEXTJ requirements',
+            IDNA_ERROR_DISALLOWED             => 'a label or domain name contains disallowed characters',
+            IDNA_ERROR_PUNYCODE               => 'a label starts with "xn--" but does not contain valid Punycode',
+            IDNA_ERROR_LABEL_HAS_DOT          => 'a label contains a dot=full stop',
+            IDNA_ERROR_INVALID_ACE_LABEL      => 'An ACE label does not contain a valid label string',
+            IDNA_ERROR_BIDI                   => 'a label does not meet the IDNA BiDi requirements (for right-to-left characters)',
+            IDNA_ERROR_CONTEXTJ               => 'a label does not meet the IDNA CONTEXTJ requirements',
         ];
 
         $result = [];
@@ -298,8 +301,10 @@ abstract class AbstractUri implements UriInterface
      * Validate and Format the IPv6/IPvfuture host.
      *
      * @param string $host
-     * @return string
+     *
      * @throws UriException if the submitted host is not a valid IPv6
+     *
+     * @return string
      */
     private function formatIp($host)
     {
@@ -356,8 +361,9 @@ abstract class AbstractUri implements UriInterface
         $port = $this->filterPort($port);
         if (isset(static::$standardSchemes[$this->scheme])
             && static::$standardSchemes[$this->scheme] === $port) {
-            return null;
+            return;
         }
+
         return $port;
     }
 
@@ -378,6 +384,7 @@ abstract class AbstractUri implements UriInterface
         if ($port < 0) {
             throw UriException::createFromInvalidPort($port);
         }
+
         return $port;
     }
 
@@ -385,6 +392,7 @@ abstract class AbstractUri implements UriInterface
      * Filter the Path component.
      *
      * @param string $path
+     *
      * @return string
      */
     protected function filterPath($path)
@@ -396,12 +404,14 @@ abstract class AbstractUri implements UriInterface
      * Format the Path component.
      *
      * @param string $path
+     *
      * @return string
      */
     protected function formatPath($path)
     {
         static $pattern = '/(?:[^'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.'%:@\/}{]++|%(?![A-Fa-f0-9]{2}))/';
-        return preg_replace_callback($pattern, [AbstractUri::class, 'urlEncodeMatch'], $path);
+
+        return preg_replace_callback($pattern, [self::class, 'urlEncodeMatch'], $path);
     }
 
     /**
@@ -426,13 +436,14 @@ abstract class AbstractUri implements UriInterface
 
         static $pattern = '/(?:[^'.self::REGEXP_CHARS_UNRESERVED.self::REGEXP_CHARS_SUBDELIM.'%:@\/\?]++|%(?![A-Fa-f0-9]{2}))/';
 
-        return preg_replace_callback($pattern, [AbstractUri::class, 'urlEncodeMatch'], $component);
+        return preg_replace_callback($pattern, [self::class, 'urlEncodeMatch'], $component);
     }
 
     /**
      * Static method called by PHP's var export.
      *
      * @param array $components
+     *
      * @return static
      */
     public static function __set_state(array $components)
@@ -460,6 +471,7 @@ abstract class AbstractUri implements UriInterface
      * Create a new instance from a string.
      *
      * @param string $uri
+     *
      * @return static
      */
     public static function createFromString($uri = '')
@@ -492,8 +504,9 @@ abstract class AbstractUri implements UriInterface
     {
         $components += [
             'scheme' => null, 'user' => null, 'pass' => null, 'host' => null,
-            'port' => null, 'path' => '', 'query' => null, 'fragment' => null,
+            'port'   => null, 'path' => '', 'query' => null, 'fragment' => null,
         ];
+
         return new static(
             $components['scheme'],
             $components['user'],
@@ -508,7 +521,9 @@ abstract class AbstractUri implements UriInterface
 
     /**
      * Returns the RFC3986 encoded string matched.
+     *
      * @param array $matches
+     *
      * @return string
      */
     protected static function urlEncodeMatch(array $matches)
@@ -549,11 +564,13 @@ abstract class AbstractUri implements UriInterface
      * Generate the string representation from its components.
      *
      * @see https://tools.ietf.org/html/rfc3986#section-5.3
+     *
      * @param null|string $scheme
      * @param null|string $authority
      * @param null|string $path
      * @param null|string $query
      * @param null|string $fragment
+     *
      * @return string
      */
     protected function getUriString(
@@ -562,8 +579,7 @@ abstract class AbstractUri implements UriInterface
         $path = '',
         $query = null,
         $fragment = null
-    )
-    {
+    ) {
         if (null !== $scheme) {
             $scheme = $scheme.':';
         }
@@ -600,7 +616,7 @@ abstract class AbstractUri implements UriInterface
      */
     public function getScheme()
     {
-        return (string)$this->scheme;
+        return (string) $this->scheme;
     }
 
     /**
@@ -624,7 +640,7 @@ abstract class AbstractUri implements UriInterface
      */
     public function getAuthority()
     {
-        return (string)$this->authority;
+        return (string) $this->authority;
     }
 
     /**
@@ -644,6 +660,7 @@ abstract class AbstractUri implements UriInterface
         if (null !== $this->port) {
             $authority .= ':'.$this->port;
         }
+
         return $authority;
     }
 
@@ -670,7 +687,7 @@ abstract class AbstractUri implements UriInterface
      */
     public function getUserInfo()
     {
-        return (string)$this->userInfo;
+        return (string) $this->userInfo;
     }
 
     /**
@@ -687,7 +704,7 @@ abstract class AbstractUri implements UriInterface
      */
     public function getHost()
     {
-        return (string)$this->host;
+        return (string) $this->host;
     }
 
     /**
@@ -764,7 +781,7 @@ abstract class AbstractUri implements UriInterface
      */
     public function getQuery()
     {
-        return (string)$this->query;
+        return (string) $this->query;
     }
 
     /**
@@ -786,7 +803,7 @@ abstract class AbstractUri implements UriInterface
      */
     public function getFragment()
     {
-        return (string)$this->fragment;
+        return (string) $this->fragment;
     }
 
     /**
@@ -802,6 +819,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withScheme($scheme)
@@ -828,9 +846,10 @@ abstract class AbstractUri implements UriInterface
      * Filter a string.
      *
      * @param string $str
-     * @return string
      *
      * @throws UriException if the submitted data can not be converted to string
+     *
+     * @return string
      */
     protected static function filterString($str)
     {
@@ -859,6 +878,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withUserInfo($user, $password = null)
@@ -893,6 +913,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withHost($host)
@@ -932,6 +953,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withPort($port)
@@ -972,6 +994,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withPath($path)
@@ -1004,6 +1027,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withQuery($query)
@@ -1040,6 +1064,7 @@ abstract class AbstractUri implements UriInterface
      * @throws UriException for transformations that would result in
      *                      a state that cannot be represented as a
      *                      valid reference.
+     *
      * @return static
      */
     public function withFragment($fragment)

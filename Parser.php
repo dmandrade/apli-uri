@@ -1,11 +1,12 @@
 <?php
 /**
- *  Copyright (c) 2018 Danilo Andrade
+ *  Copyright (c) 2018 Danilo Andrade.
  *
  *  This file is part of the apli project.
  *
  * @project apli
  * @file Parser.php
+ *
  * @author Danilo Andrade <danilo@webbingbrasil.com.br>
  * @date 27/08/18 at 10:27
  */
@@ -14,17 +15,16 @@
  * Created by PhpStorm.
  * User: Danilo
  * Date: 25/08/2018
- * Time: 12:18
+ * Time: 12:18.
  */
 
 namespace Apli\Uri;
-
 
 class Parser
 {
     const URI_COMPONENTS = [
         'scheme' => null, 'user' => null, 'pass' => null, 'host' => null,
-        'port' => null, 'path' => '', 'query' => null, 'fragment' => null,
+        'port'   => null, 'path' => '', 'query' => null, 'fragment' => null,
     ];
 
     /**
@@ -47,11 +47,11 @@ class Parser
         static $pattern = '/[\x00-\x1f\x7f]/';
         //simple URI which do not need any parsing
         static $simple_uri = [
-            '' => [],
-            '#' => ['fragment' => ''],
-            '?' => ['query' => ''],
+            ''   => [],
+            '#'  => ['fragment' => ''],
+            '?'  => ['query' => ''],
             '?#' => ['query' => '', 'fragment' => ''],
-            '/' => ['path' => '/'],
+            '/'  => ['path' => '/'],
             '//' => ['host' => ''],
         ];
         if (isset($simple_uri[$uri])) {
@@ -65,13 +65,15 @@ class Parser
         //The URI is made of the fragment only
         if ('#' === $first_char) {
             $components = self::URI_COMPONENTS;
-            $components['fragment'] = (string)substr($uri, 1);
+            $components['fragment'] = (string) substr($uri, 1);
+
             return $components;
         }
         //The URI is made of the query and fragment
         if ('?' === $first_char) {
             $components = self::URI_COMPONENTS;
             list($components['query'], $components['fragment']) = explode('#', substr($uri, 1), 2) + [1 => null];
+
             return $components;
         }
         //The URI does not contain any scheme part
@@ -113,7 +115,7 @@ class Parser
     protected function parseSchemeSpecificPart($uri)
     {
         //We remove the authority delimiter
-        $remainingUri = (string)substr($uri, 2);
+        $remainingUri = (string) substr($uri, 2);
         $components = self::URI_COMPONENTS;
         //Parsing is done from the right upmost part to the left
         //1 - detect fragment, query and path part if any
@@ -127,6 +129,7 @@ class Parser
         //if the authority part is empty parsing is simplified
         if ('' === $remainingUri) {
             $components['host'] = '';
+
             return $components;
         }
         //otherwise we split the authority into the user information and the hostname parts
@@ -137,6 +140,7 @@ class Parser
             list($components['user'], $components['pass']) = explode(':', $userInfo, 2) + [1 => null];
         }
         list($components['host'], $components['port']) = $this->parseHostname($hostname);
+
         return $components;
     }
 
@@ -153,12 +157,14 @@ class Parser
     {
         if (false === strpos($hostname, '[')) {
             list($host, $port) = explode(':', $hostname, 2) + [1 => null];
+
             return [$this->filterHost($host), $this->filterPort($port)];
         }
         $delimiterOffset = strpos($hostname, ']') + 1;
         if (isset($hostname[$delimiterOffset]) && ':' !== $hostname[$delimiterOffset]) {
             throw Exception::createFromInvalidHostname($hostname);
         }
+
         return [
             $this->filterHost(substr($hostname, 0, $delimiterOffset)),
             $this->filterPort(substr($hostname, ++$delimiterOffset)),
@@ -166,7 +172,7 @@ class Parser
     }
 
     /**
-     * validate the host component
+     * validate the host component.
      *
      * @param string|null $host
      *
@@ -179,6 +185,7 @@ class Parser
         if (null === $host || $this->isHost($host)) {
             return $host;
         }
+
         throw Exception::createFromInvalidHost($host);
     }
 
@@ -199,7 +206,7 @@ class Parser
     }
 
     /**
-     * Validate a IPv6/IPvfuture host
+     * Validate a IPv6/IPvfuture host.
      *
      * @see http://tools.ietf.org/html/rfc3986#section-3.2.2
      * @see http://tools.ietf.org/html/rfc6874#section-2
@@ -250,11 +257,12 @@ class Parser
         //Only the address block fe80::/10 can have a Zone ID attach to
         //let's detect the link local significant 10 bits
         static $addressBlock = "\xfe\x80";
+
         return substr(inet_pton($ip) & $addressBlock, 0, 2) === $addressBlock;
     }
 
     /**
-     * Returns whether the host is an IPv4 or a registered named
+     * Returns whether the host is an IPv4 or a registered named.
      *
      * @see http://tools.ietf.org/html/rfc3986#section-3.2.2
      *
@@ -290,6 +298,7 @@ class Parser
 
         if ($idnSupport) {
             idn_to_ascii($host, IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46, $arr);
+
             return 0 === $arr['errors'];
         }
 
@@ -315,12 +324,13 @@ class Parser
     {
         static $pattern = '/^[0-9]+$/';
         if (null === $port || false === $port || '' === $port) {
-            return null;
+            return;
         }
-        if (!preg_match($pattern, (string)$port)) {
+        if (!preg_match($pattern, (string) $port)) {
             throw Exception::createFromInvalidPort($port);
         }
-        return (int)$port;
+
+        return (int) $port;
     }
 
     /**
@@ -426,6 +436,7 @@ class Parser
         //2.3 - if the scheme specific part is a double forward slash
         if ('//' === $remainingUri) {
             $components['host'] = '';
+
             return $components;
         }
         //2.4 - if the scheme specific part starts with double forward slash
@@ -433,6 +444,7 @@ class Parser
         if (0 === strpos($remainingUri, '//')) {
             $components = $this->parseSchemeSpecificPart($remainingUri);
             $components['scheme'] = $scheme;
+
             return $components;
         }
         //2.5 - Parsing is done from the right upmost part to the left from the scheme specific part
@@ -440,6 +452,7 @@ class Parser
         list($remainingUri, $components['fragment']) = explode('#', $remainingUri, 2) + [1 => null];
         //2.5.2 - detect the part and query part if any
         list($components['path'], $components['query']) = explode('?', $remainingUri, 2) + [1 => null];
+
         return $components;
     }
 
@@ -455,6 +468,7 @@ class Parser
     public function isScheme($scheme)
     {
         static $pattern = '/^[a-z][a-z\+\.\-]*$/i';
+
         return '' === $scheme || preg_match($pattern, $scheme);
     }
 }

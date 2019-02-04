@@ -1,11 +1,12 @@
 <?php
 /**
- *  Copyright (c) 2018 Danilo Andrade
+ *  Copyright (c) 2018 Danilo Andrade.
  *
  *  This file is part of the apli project.
  *
  * @project apli
  * @file Url.php
+ *
  * @author Danilo Andrade <danilo@webbingbrasil.com.br>
  * @date 27/08/18 at 10:27
  */
@@ -14,24 +15,23 @@
  * Created by PhpStorm.
  * User: Danilo
  * Date: 25/08/2018
- * Time: 11:06
+ * Time: 11:06.
  */
 
 namespace Apli\Uri;
 
 /**
- * Class Url
- * @package Apli\Uri
+ * Class Url.
  */
 class Url extends AbstractUri
 {
     /**
-     * Default schemes
+     * Default schemes.
      *
      * @var array
      */
     protected static $standardSchemes = [
-        'http' => 80,
+        'http'  => 80,
         'https' => 443,
     ];
 
@@ -39,14 +39,17 @@ class Url extends AbstractUri
      * Create a new instance from the environment.
      *
      * @param array $server
-     * @return Url
+     *
      * @throws UriException
+     *
+     * @return Url
      */
     public static function createFromServer(array $server)
     {
         list($user, $pass) = static::fetchUserInfo($server);
         list($host, $port) = static::fetchHostname($server);
         list($path, $query) = static::fetchRequestUri($server);
+
         return new static(static::fetchScheme($server), $user, $pass, $host, $port, $path, $query);
     }
 
@@ -54,6 +57,7 @@ class Url extends AbstractUri
      * Returns the environment user info.
      *
      * @param array $server the environment server typically $_SERVER
+     *
      * @return array
      */
     protected static function fetchUserInfo(array $server)
@@ -81,23 +85,25 @@ class Url extends AbstractUri
      * Returns the environment host.
      *
      * @param array $server the environment server typically $_SERVER
-     * @return array
      *
      * @throws UriException If the host can not be detected
+     *
+     * @return array
      */
     protected static function fetchHostname(array $server)
     {
         $server += ['SERVER_PORT' => null];
 
         if (null !== $server['SERVER_PORT']) {
-            $server['SERVER_PORT'] = (int)$server['SERVER_PORT'];
+            $server['SERVER_PORT'] = (int) $server['SERVER_PORT'];
         }
 
         if (isset($server['HTTP_HOST'])) {
             preg_match(',^(?<host>(\[.*\]|[^:])*)(\:(?<port>[^/?\#]*))?$,x', $server['HTTP_HOST'], $matches);
+
             return [
                 $matches['host'],
-                isset($matches['port']) ? (int)$matches['port'] : $server['SERVER_PORT'],
+                isset($matches['port']) ? (int) $matches['port'] : $server['SERVER_PORT'],
             ];
         }
 
@@ -116,6 +122,7 @@ class Url extends AbstractUri
      * Returns the environment path.
      *
      * @param array $server the environment server typically $_SERVER
+     *
      * @return array
      */
     protected static function fetchRequestUri(array $server)
@@ -126,8 +133,9 @@ class Url extends AbstractUri
         }
 
         if (isset($server['REQUEST_URI'])) {
-            list($path,) = explode('?', $server['REQUEST_URI'], 2);
+            list($path) = explode('?', $server['REQUEST_URI'], 2);
             $query = ('' !== $server['QUERY_STRING']) ? $server['QUERY_STRING'] : null;
+
             return [$path, $query];
         }
 
@@ -138,6 +146,7 @@ class Url extends AbstractUri
      * Returns the environment scheme.
      *
      * @param array $server the environment server typically $_SERVER
+     *
      * @return string
      */
     protected static function fetchScheme(array $server)
@@ -165,6 +174,7 @@ class Url extends AbstractUri
         if (1 > $port || 65535 < $port) {
             throw UriException::createFromInvalidPort($port);
         }
+
         return $port;
     }
 
