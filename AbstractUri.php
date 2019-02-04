@@ -4,10 +4,10 @@
  *
  *  This file is part of the apli project.
  *
- *  @project apli
- *  @file AbstractUri.php
- *  @author Danilo Andrade <danilo@webbingbrasil.com.br>
- *  @date 27/08/18 at 10:27
+ * @project apli
+ * @file AbstractUri.php
+ * @author Danilo Andrade <danilo@webbingbrasil.com.br>
+ * @date 27/08/18 at 10:27
  */
 
 namespace Apli\Uri;
@@ -430,54 +430,6 @@ abstract class AbstractUri implements UriInterface
     }
 
     /**
-     * Tell whether the current is in valid state.
-     *
-     * The object validity depends on the scheme. This method
-     * MUST be implemented on every object
-     *
-     * @return bool
-     */
-    abstract protected function isValidUri();
-
-    /**
-     * Generate the string representation from its components.
-     *
-     * @see https://tools.ietf.org/html/rfc3986#section-5.3
-     * @param null|string $scheme
-     * @param null|string $authority
-     * @param null|string $path
-     * @param null|string $query
-     * @param null|string $fragment
-     * @return string
-     */
-    protected function getUriString(
-        $scheme = null,
-        $authority = null,
-        $path = '',
-        $query = null,
-        $fragment = null
-    )
-    {
-        if (null !== $scheme) {
-            $scheme = $scheme.':';
-        }
-
-        if (null !== $authority) {
-            $authority = '//'.$authority;
-        }
-
-        if (null !== $query) {
-            $query = '?'.$query;
-        }
-
-        if (null !== $fragment) {
-            $fragment = '#'.$fragment;
-        }
-
-        return $scheme.$authority.$path.$query.$fragment;
-    }
-
-    /**
      * Static method called by PHP's var export.
      *
      * @param array $components
@@ -591,6 +543,44 @@ abstract class AbstractUri implements UriInterface
         );
 
         return $this->uri;
+    }
+
+    /**
+     * Generate the string representation from its components.
+     *
+     * @see https://tools.ietf.org/html/rfc3986#section-5.3
+     * @param null|string $scheme
+     * @param null|string $authority
+     * @param null|string $path
+     * @param null|string $query
+     * @param null|string $fragment
+     * @return string
+     */
+    protected function getUriString(
+        $scheme = null,
+        $authority = null,
+        $path = '',
+        $query = null,
+        $fragment = null
+    )
+    {
+        if (null !== $scheme) {
+            $scheme = $scheme.':';
+        }
+
+        if (null !== $authority) {
+            $authority = '//'.$authority;
+        }
+
+        if (null !== $query) {
+            $query = '?'.$query;
+        }
+
+        if (null !== $fragment) {
+            $fragment = '#'.$fragment;
+        }
+
+        return $scheme.$authority.$path.$query.$fragment;
     }
 
     /**
@@ -1102,4 +1092,14 @@ abstract class AbstractUri implements UriInterface
     {
         throw new BadMethodCallException(sprintf('"%s" is an undefined or inaccessible property', $property));
     }
+
+    /**
+     * Tell whether the current is in valid state.
+     *
+     * The object validity depends on the scheme. This method
+     * MUST be implemented on every object
+     *
+     * @return bool
+     */
+    abstract protected function isValidUri();
 }

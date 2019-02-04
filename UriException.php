@@ -4,10 +4,10 @@
  *
  *  This file is part of the apli project.
  *
- *  @project apli
- *  @file UriException.php
- *  @author Danilo Andrade <danilo@webbingbrasil.com.br>
- *  @date 04/09/18 at 09:11
+ * @project apli
+ * @file UriException.php
+ * @author Danilo Andrade <danilo@webbingbrasil.com.br>
+ * @date 04/09/18 at 09:11
  */
 
 /**
